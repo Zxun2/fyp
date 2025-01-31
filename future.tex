@@ -1,0 +1,45 @@
+\chapter{Plans for next semester}
+
+Next semester, the focus will be on implementing the core components of the project, including multi-agent validation, edit propagation models, and evaluation pipelines. In addition to the technical goals, effective project management practices will be established to ensure timely progress, structured documentation, and streamlined communication.
+
+\section{Technical Implementation Goals}
+
+\subsubsection{Dataset Development and Refinement}
+
+The semester will begin with finalizing and refining a comprehensive dataset specifically tailored for multi-file and propagated code edits. This dataset will serve as the foundation for model training, testing, and evaluation. I plan to iteratively refine the dataset, ensuring it includes diverse examples of code dependencies and propagated changes to enable accurate validation and robust model training.
+
+\subsubsection{Implementation of the Multi-Agent System}
+
+The core technical goal will be to develop the multi-agent system for dependency validation across code edits. Each agent will be programmed to handle specific dependency relationships, such as built-in, global, enclosing, and local (BGEL) dependencies. Agent communication protocols will be implemented to ensure agents reach consensus on dependencies, and their combined outputs will be used to construct a comprehensive dependency graph.
+
+\subsubsection{Directed Acyclic Graph (DAG) for Edit Propagation}
+
+To represent relationships identified by the multi-agent system, I will develop an algorithm to construct a Directed Acyclic Graph (DAG). Each node will represent an edit, and directed edges will denote dependencies, enabling systematic tracking of change propagation across the codebase.
+
+\subsubsection{Evaluation Pipeline Setup}
+
+An automated evaluation pipeline will be developed to support testing the model’s effectiveness in real-world editing scenarios. This pipeline will simulate user actions based on ground-truth changes, enabling evaluation through metrics such as Lines, Levenshtein Distance, and Keystrokes. This workflow will ensure continuous testing, allowing for data-driven improvements to the model.
+
+\section{Project Management}
+
+To ensure that these objectives are met efficiently, a structured project management plan will be established, focusing on task tracking, timeline management, and communication.
+
+\subsubsection{Timeline and Milestone Planning}
+
+The semester will be divided into phases, with each phase targeting specific deliverables:
+\begin{itemize}
+    \item \textbf{Phase 1}: Dataset finalization and multi-agent system setup.
+    \item \textbf{Phase 2}: DAG construction and integration with the multi-agent system.
+    \item \textbf{Phase 3}: Evaluation pipeline development and initial testing.
+    \item \textbf{Phase 4}: Optimization based on preliminary experiment results.
+\end{itemize}
+
+Each phase will have clearly defined milestones, allowing for regular assessments of progress and any needed adjustments.
+
+\subsubsection{Task Management and Tracking}
+
+Task tracking tools, such as Trello or Jira, will be used to break down project components into actionable tasks with specific deadlines. Each task will be assigned priority levels, and progress will be tracked to ensure adherence to the timeline. This structured approach will facilitate efficient time management and maintain focus on high-priority objectives.
+
+\subsubsection{Weekly Checkpoints and Progress Reviews}
+
+To keep the project on track, I will set weekly goals and conduct progress reviews. These checkpoints will involve evaluating completed tasks, assessing upcoming challenges, and adjusting timelines or priorities as needed. This approach will help identify potential bottlenecks early and ensure that corrective actions are taken promptly.

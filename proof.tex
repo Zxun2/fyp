@@ -1,0 +1,79 @@
+\chapter{Preservation Properties of Partial Order Reduction}
+
+Partial Order Reduction (POR) ensures that certain properties of the system being analyzed are preserved in the reduced state space. In this section, we formally prove the preservation of \textit{safety} and \textit{liveness} properties.
+
+\subsection{Preservation of Safety Properties}
+
+A \textbf{safety property} states that "something bad never happens" during the execution of the system. Formally, a safety property can be expressed as:
+\[
+\phi_{\text{safety}}: \forall \sigma \in \Sigma, \forall s \in \sigma, \quad s \not\models \text{BadState}
+\]
+where:
+\begin{itemize}
+    \item \( \Sigma \) is the set of all possible executions of the system.
+    \item \( \sigma \) is a specific execution trace.
+    \item \( s \) is a state in the trace \( \sigma \).
+    \item \( \text{BadState} \) is the set of states violating the safety property.
+\end{itemize}
+
+\textbf{Proof:}
+1. POR ensures that for every state \( s \) in the original state space, there exists a corresponding state \( s_{\text{red}} \) in the reduced state space.
+\[
+\forall s \in S, \exists s_{\text{red}} \in S_{\text{red}}: s \sim s_{\text{red}}
+\]
+where \( \sim \) denotes equivalence under POR.
+
+2. If \( \phi_{\text{safety}} \) holds in the original state space, it implies:
+\[
+\forall s \in S, \quad s \not\models \text{BadState}.
+\]
+
+3. By the equivalence property of POR:
+\[
+s_{\text{red}} \sim s \implies s_{\text{red}} \not\models \text{BadState}.
+\]
+
+4. Therefore, \( \phi_{\text{safety}} \) also holds in the reduced state space:
+\[
+\forall s_{\text{red}} \in S_{\text{red}}, \quad s_{\text{red}} \not\models \text{BadState}.
+\]
+
+Hence, safety properties are preserved under POR.
+
+\subsection{Preservation of Liveness Properties}
+
+A \textbf{liveness property} states that "something good eventually happens." Formally, a liveness property can be expressed as:
+\[
+\phi_{\text{liveness}}: \forall \sigma \in \Sigma, \exists s \in \sigma, \quad s \models \text{GoodState}
+\]
+where \( \text{GoodState} \) is the set of states satisfying the liveness property.
+
+\textbf{Proof:}
+1. For liveness properties, POR ensures that every transition in the original state space is represented in the reduced state space. This is guaranteed by the ample set condition:
+\[
+\forall t \in T, \exists t_{\text{red}} \in T_{\text{red}}: t \sim t_{\text{red}}.
+\]
+
+2. Let \( \sigma \in \Sigma \) be an execution trace in the original state space. Since \( \phi_{\text{liveness}} \) holds, there exists a state \( s \in \sigma \) such that:
+\[
+s \models \text{GoodState}.
+\]
+
+3. By POR, every trace \( \sigma_{\text{red}} \in \Sigma_{\text{red}} \) in the reduced state space contains an equivalent state \( s_{\text{red}} \) such that:
+\[
+s_{\text{red}} \sim s \quad \text{and} \quad s_{\text{red}} \models \text{GoodState}.
+\]
+
+4. Thus, \( \phi_{\text{liveness}} \) holds in the reduced state space:
+\[
+\forall \sigma_{\text{red}} \in \Sigma_{\text{red}}, \exists s_{\text{red}} \in \sigma_{\text{red}}, \quad s_{\text{red}} \models \text{GoodState}.
+\]
+
+Hence, liveness properties are preserved under POR.
+
+\subsection{Conclusion}
+The preservation of both safety and liveness properties demonstrates that the reduced state space produced by Partial Order Reduction is sound and complete with respect to the properties being verified:
+\[
+\forall \phi \in \mathcal{P}, \quad (S, T, s_0) \models \phi \iff (S_{\text{red}}, T_{\text{red}}, s_0) \models \phi.
+\]
+This guarantees that the reduction does not compromise the correctness of the analysis.

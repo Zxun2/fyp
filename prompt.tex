@@ -1,0 +1,89 @@
+\chapter{System Prompt}
+
+\lstset{
+    basicstyle=\scriptsize\ttfamily, % Small font size and monospaced font
+    breaklines=true,            % Enable line wrapping
+    frame=single                % Add a frame around the content
+}
+
+\begin{lstlisting}[language=json, basicstyle=\fontsize{8}{10}\selectfont\ttfamily]   
+<Task description>
+You will be given the 2 code edits within the same commit, analyze what is deleted and added in the 2 edits, and their relationship before and after the edit. Recover the edit scenario and predict their editing order based on the causal relationships. Not all edit pairs have causal relationships.
+</Task description>
+
+<Referenceable relationships>
+There are several relationships you can refer to:
+1. Cut-Paste: A code snippet is removed from one location and placed elsewhere. The cut action typically precedes the paste action.
+2. Copy-Paste: Similar code appears in both locations before and after the edits, indicating duplication. This relationship is generally bidirectional.
+3. Positional Order: The edits occur close together in the same file (\leq 10 lines apart) and share a similar context, block, or scope.
+4. Dependency: A dependency relationship is created or removed between the edits. Ignore this relationship if it already existed in both the pre-edit and post-edit states.
+5. Logical Order: Both edits are essential to implement a specific feature and are interdependent.
+6. Import-Use: A special case of dependency where one edit involves an import statement, and the other involves the use of the imported symbol. The edit with reference to the method or variable introduced in the import should be the source edit, and the import edit should be the target. 
+</Referenceable relationships>
+
+<Response schema>
+You must respond in pure JSON format. Ensure the response strictly adheres to the following schema:
+{   
+    "context": describe if the two edits belong to the same file, scope or block, and if any, affects the relationship between the two edits, Make use of the static information provided.
+    "deleted_in_edit_1": describe the deleted code in edit 1,
+    "added_in_edit_1": describe the added code in edit 1,
+    "deleted_in_edit_2": describe the deleted code in edit 2,
+    "added_in_edit_2": describe the added code in edit 2,
+    "how_deleted_in_edit_1_and_deleted_in_edit_2_are_related": describe the relationship between the deleted code in edit 1 and the deleted code in edit 2,
+    "how_deleted_in_edit_1_and_added_in_edit_2_are_related": describe the relationship between the deleted code in edit 1 and the added code in edit 2,
+    "how_added_in_edit_1_and_deleted_in_edit_2_are_related": describe the relationship between the added code in edit 1 and the deleted code in edit 2,
+    "how_added_in_edit_1_and_added_in_edit_2_are_related": describe the relationship between the added code in edit 1 and the added code in edit 2,
+    "reason": string, // A textual explanation of the rationale.
+    "referenced_relationships": list[string] | None, // A list of relevant relationships. You may add your own relationships if applicable.
+    "source_edit_idx": 1 | 2, // The index of the source edit
+    "target_edit_idx": 1 | 2, // The index of the target edit
+    "source_role_in_relationship": string, // Describe how the source edit is involved in the relationship
+    "target_role_in_relationship": string, // Describe how the target edit is involved in the relationship
+    "causal_direction": string // One of the following: "unidirectional, "no_relation", "bidirectional"
+}
+</Response schema>
+
+<Response example>
+{
+    "context": "the two edits are in the same file, but in different block. They are likely to be unrelated.",
+    "deleted_in_edit_1": "no deleted code",
+    "added_in_edit_1": "add `@total_ordering` Decorator, used to automatically derive comparison methods",
+    "deleted_in_edit_2": "delete `__cmp__` method, used in python 2",
+    "added_in_edit_2": "updated to method `__lt__` and `__le__`",
+    "how_deleted_in_edit_1_and_deleted_in_edit_2_are_related": no relationship,
+    "how_deleted_in_edit_1_and_added_in_edit_2_are_related": no relationship,
+    "how_added_in_edit_1_and_deleted_in_edit_2_are_related": no relationship,
+    "how_added_in_edit_1_and_added_in_edit_2_are_related": `@total_ordering` combines `__lt__` and `__le__` to automatically derive other comparison methods,
+    "reason": "Edit 1 add `@total_ordering` Decorator, and Edit 2 replaced method `__cmp__` with `__lt__` and `__le__`. When 2 edits are combined together, the decorator ensures all comparison methods are derived automatically based on the explicitly defined `__lt__` and `__le__`",
+    "referenced_relationships": ["Logical order"],
+    "source_edit_idx": 1,
+    "target_edit_idx": 2,
+    "source_role_in_relationship": "Edit 1 is the decorator",
+    "target_role_in_relationship": "Edit 2 only implement `__lt__` and `__le__` because of the decorator",
+    "causal_direction": "bidirectional"
+}
+</Response example>
+
+
+Here is the summary of the code edits:
+{hunk1}
+{hunk2}
+
+<Static Information>
+Use the following information to aid in your decision making.
+
+{dependency_info}
+</Static Information>
+
+<Commit Message>
+{commit_message}
+</Commit Message>
+
+<Commit Summary>
+The following anaylsis is made by another AI agent. You may find it helpful to refer to it. 
+
+{summary}
+</Commit Summary>
+
+Your response (JSON framework must be constructed with double-quotes. Do not enclose JSON content between ```json and ``` tags).
+\end{lstlisting}    

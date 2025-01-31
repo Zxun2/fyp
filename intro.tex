@@ -1,0 +1,50 @@
+\chapter{Introduction}
+
+\section{Motivation}
+
+Large Language Models (LLMs) have demonstrated remarkable performance in code-related tasks, leveraging their extensive pre-training on programming languages and frameworks. Among these tasks, code completion has emerged as a key application, enabling LLMs to assist developers by predicting and generating code in real-time. This capability has significantly improved development efficiency and productivity, leading to the widespread adoption of AI Integrated Development Environment (IDE), such as GitHub Copilot, Cursor, and TraeAI.
+
+While much of the current focus of code completion is on the immediate file that a developer is working on, leveraging repository-level contextual information provides additional opportunities to improve code completion. This context includes  core function definitions, configuration files, and code snippets from elsewhere in the repository that align with the developer’s current logic. By incorporating this broader context, LLMs can generate more accurate and context-aware code, ultimately increasing the acceptance rate of suggestions and further enhancing coding efficiency. Although both academia and the industry have explored how to leverage repository-level information to help LLMs predict code, several practical challenges remain under-explored, particularly in real-world production environments.
+
+% Despite these advancements, existing LLM-powered code assistants exhibit significant limitations in understanding the broader context and intent behind user edits. Their recommendations are predominantly localized, with insufficient consideration of inter-dependencies across interconnected code segments. This lack of contextual awareness becomes particularly problematic in large, multi-file projects, where such inter-dependencies are critical for maintaining code consistency and correctness. Consequently, these limitations often result in suboptimal or counterproductive suggestions, reducing the overall effectiveness of these tools.
+
+% Addressing these challenges requires a systematic approach to enhance the contextual understanding and decision-making capabilities of LLM-based code assistants. This includes developing methods to handle complex, multi-step development tasks that demand a high-level understanding of a codebase, as well as designing mechanisms to prioritize and sequence recommendations in a manner that aligns with broader project goals and user intent. 
+
+\newpage
+\section{Objective}
+
+Current approaches do not effectively incorporate developers’ cross-file browsing and editing behavior, missing valuable intent information. This research seeks to address this limitation by formalizing methods to infer, prioritize, and sequence dependencies between edits. By enhancing understanding of causal-effect relationships and edit sequencing, the objective is to empower LLM agents to:
+
+\begin{enumerate}
+    \item Anticipate user requirements by identifying context-aware dependencies.
+    \item Align logically coherent and semantically consistent edit sequences with user intent.
+    \item Enhance developer productivity through reliable, and context-driven recommendations.
+\end{enumerate}
+
+% Achieving these objectives will not only reduce developer cognitive load and minimize errors but also promote seamless collaboration between developers and AI systems, ultimately improving the efficiency and quality of the software development process.
+
+
+\subsubsection{Formalizing Causal-Effect relationships of Edits}
+
+Understanding these relationships is essential for developing a model that can accurately propagate changes. We will categorize and formalize various types of relationships, such as dependencies, conditional changes, and sequential modifications. This provides the foundation for further research.
+
+\subsubsection{Derive an agentic workflow to estimate partial orders}
+
+Orchestrating multiple agents involves assigning specialized tasks to individual agents, each responsible for specific aspects of the partial order estimation process. For instance, one agent might identify local dependencies, while another evaluates global implications across the codebase. These agents communicate iteratively, leveraging the DAG structure to refine their understanding of edit sequences. This multi-agent workflow ensures that partial orders are determined efficiently and align closely with user intent, enabling more cohesive and context-aware code recommendations.
+
+
+\subsubsection{Building a Directed Acyclic Graph (DAG)}
+
+In the graph, nodes represent individual edits, while edges denote dependencies or causal relationships. This structure allows us to systematically track how a local edit may impact other parts of the code, making it possible to propagate changes accurately. This will be crucial in visualizing and managing the propagation paths, thereby enhancing the accuracy and reliability of automated code editing.
+
+\section{Constraints \& Assumptions}
+
+Constraints, and assumptions impact the scope and direction of this project. Addressing these challenges is essential to achieve reliable results and to contribute novel insights to the field.
+
+\subsubsection{Lack of a Standard Dataset and Verification Challenges}
+
+No gold-standard dataset currently exists for propagation of code edits, and constructing a high-quality dataset is both time-intensive and resource-intensive. This process involves curating a representative set of code samples that capture a wide range of propagated edit scenarios and performing rigorous verification to ensure accuracy. Additionally, without a pre-existing standard, establishing a reliable validation process for our dataset becomes complex, requiring custom metrics and evaluations.
+
+\subsubsection{Assumptions for Feasibility and Scope}
+
+To ensure feasibility, we assume that our constructed dataset will adequately represent real-world propagated edits, even with some limitations in diversity and scale. While we aim to capture causal relationships accurately, certain simplifying assumptions may be applied to improve computational efficiency. In cases where precise partial ordering is challenging, heuristic-based ordering will be used to yield practical insights.
