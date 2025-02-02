@@ -14,7 +14,7 @@ with 38,197 commits. Dataset statistics are shown in Table \ref{tab:dataset-stat
 \textbf{Language} 
   & \textbf{\# Repositories} 
   & \textbf{\# Commits} 
-  & \textbf{\# Hunks} \\
+  & \textbf{\# Edits} \\
 \hline
 \textbf{Python}      
   & 125   & 8148  
@@ -104,7 +104,7 @@ As a result, the three types of sliding windows can reflect the distribution of 
 
 \section{Recovering Edit Process}
 
-Following the methodology outlined in Section 3.2, our goal is to reconstruct the edit sequence of each commit. Once the pairwise dependencies of edits within a commit have been identified, we introduce a framework for deriving \emph{constrained orderings} of nodes in a Directed Acyclic Graph (DAG). We formalize the notion of topological sorts subject to group-based constraints, as well as a depth-first traversal variant that similarly respects user-defined grouping. We provide detailed algorithms that demonstrate how to compute every possible valid ordering.
+Following the methodology outlined in Section \ref{sec:por}, our goal is to reconstruct the edit sequence of each commit. Once the pairwise dependencies of edits within a commit have been identified, we introduce a framework for deriving \emph{constrained orderings} of nodes in a Directed Acyclic Graph (DAG). We formalize the notion of topological sorts subject to group-based constraints, as well as a depth-first traversal variant that similarly respects user-defined grouping. We provide detailed algorithms that demonstrate how to compute every possible valid ordering.
 
 \subsection{Preliminaries and Notations}
 
@@ -125,7 +125,7 @@ We consider a partition (or covering) of the node set $V$ into $k$ groups:
   \quad \text{where} \quad
   \bigcup_{i=1}^{k} G_i = V, 
 \]
-and each $G_i \subseteq V$. We assume a user-specified \emph{ordering} on these groups, denoted by $(G_{\pi(1)}, G_{\pi(2)}, \dots, G_{\pi(k)})$, where $\pi$ is a permutation of $\{1,2,\ldots,k\}$. 
+and each $G_i \subseteq V$. We assume a user-specified \emph{ordering} on these groups, denoted by \\ $(G_{\pi(1)}, G_{\pi(2)}, \dots, G_{\pi(k)})$, where $\pi$ is a permutation of $\{1,2,\ldots,k\}$. 
 
 The overarching idea is to \emph{respect group order} when constructing a node ordering of $V$: we do not move on to $G_{\pi(i+1)}$ before we exhaust possible nodes in $G_{\pi(i)}$, subject to each node's DAG-based indegree conditions.
 
@@ -298,10 +298,68 @@ We have introduced a framework for deriving \emph{constrained orderings} of node
 By iterating over all permutations of groups, we obtain the full set of valid orderings. This approach can be specialized for tasks such as constrained scheduling, compilation ordering, or phased execution where partial orders must be respected, but some steps are grouped logically.
 
 \section{Evaluation Workflow}
+Let $C = \{\,C^{(1)}, C^{(2)}, \dots, C^{(m)}\} $ be the set of all valid orderings of the ground-truth changes. Given a predicted sequence, $P$, we first check whether $P$ exactly matches any $C^{(i)} \in C$.
 
-To evaluate this use case, we simulate a scenario where ground-truth code changes represent the intended actions of the user. Let \( C = \{c_1, c_2, \dots, c_n\} \) denote the set of ground-truth changes the user aims to perform. At each evaluation step, the model predicts a list of suggested changes, represented as \( P = \{p_1, p_2, \dots, p_k\} \). Each predicted change \( p_i \in P \) is then compared against the ground-truth set \( C \) on a line-by-line basis. If a predicted change \( p_i \) exactly matches a ground-truth change \( c_j \in C \), we accept \( p_i \) as a valid match, assuming that the user would adopt it.
+If there exists an $i$ such that $P = C^{(i)}$, we consider $P$ a perfect match and assign zero cost.
 
-If none of the model's suggested changes match the ground-truth set, we assume that the user will manually perform the next required change in \( C \). This manual intervention allows the simulation to progress even when the model's predictions diverge from the user's intended modifications. In both cases—whether changes are accepted from the model's suggestions or manually implemented—we update the code and rerun the model to generate a new list of suggestions based on the revised code state. This iterative process continues until either all changes in \( C \) have been completed or a maximum of 6 iterations has been reached.
+Otherwise, we compute the minimum number of swaps needed to transform $P$ into each $C^{(i)}$, and select 
+$\min_{1 \leq i \leq m} \bigl(\mathrm{MinSwaps}(P, C^{(i)})\bigr)$ as the distance metric. Here, $\mathrm{MinSwaps}(\cdot,\cdot)$ measures the minimum swaps required to reorder one permutation into another (assuming both contain the same elements.
 
-At the end of this workflow, we calculate the total gain achieved by the model's assistance. This gain is measured by comparing the cumulative editing cost of all manually performed edits with the editing cost associated with implementing the entire set of ground-truth changes independently. By measuring the reduction in manual effort, we can quantify the model's effectiveness in supporting code edits and assess its value in reducing user workload.
 
+\begin{algorithm}[H]
+\caption{Minimum Swaps Between Two Permutations}
+\label{alg:min-swaps}
+\begin{algorithmic}[1]
+\Require Two permutations $p$ and $q$ of length $n$
+\Ensure The minimum number of swaps needed to transform $p$ into $q$
+
+\Statex
+
+\State \(\textit{inv} \gets \text{array of length } n\)
+\For{\(i \gets 1 \text{ to } n\)}
+    \State \(\textit{inv}[\,p[i]\,] \gets i\)
+\EndFor
+
+\State \(r \gets \text{array of length } n\)
+\For{\(i \gets 1 \text{ to } n\)}
+    \State \(r[i] \gets \textit{inv}[\,q[i]\,]\)
+\EndFor
+
+\State \(\textit{visited} \gets \text{boolean array of length } n\text{, all } \textbf{false}\)
+\State \(\textit{countCycles} \gets 0\)
+
+\For{\(i \gets 1 \text{ to } n\)}
+    \If{\(\neg \textit{visited}[i]\)}
+        \State \(\textit{countCycles} \gets \textit{countCycles} + 1\)
+        \State \(j \gets i\)
+        \While{\(\neg \textit{visited}[j]\)}
+            \State \(\textit{visited}[j] \gets \textbf{true}\)
+            \State \(j \gets r[j]\)
+        \EndWhile
+    \EndIf
+\EndFor
+
+\State \(\textit{minSwaps} \gets n - \textit{countCycles}\)
+\State \Return \(\textit{minSwaps}\)
+
+\end{algorithmic}
+\end{algorithm}
+
+The evaluation results for Python repositories can be seen below: 
+
+\begin{table}[h!]
+\centering
+\caption{Comparison of Various Programming Languages}
+\label{tab:language-comparison}
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+\textbf{Language} & \textbf{\# Commits} & \textbf{Perfect Matches} & \textbf{Min Swaps} & \textbf{Max Swaps} & \textbf{Avg} & \textbf{Median} & \textbf{Std Dev} \\ 
+\midrule
+TypeScript & 103 & 22 & 2  & 26 & 10.2 & 9  & 4.1 \\
+Python     &  89 & 19 & 1  & 38 & 12.4 & 11 & 5.2 \\
+JavaScript &  67 & 13 & 2  & 16 &  7.8 & 7  & 3.5 \\
+Go (Golang)&  56 &  9 & 0  & 20 &  8.9 & 7  & 4.3 \\
+Java       & 115 & 27 & 3  & 34 & 14.1 & 13 & 6.0 \\
+\bottomrule
+\end{tabular}
+\end{table}

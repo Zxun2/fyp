@@ -19,7 +19,16 @@ This formulation allows us to capture a range of dependencies or independencies 
 
 \newpage
 \section{Partial Order Reduction}
-The number of possible transition orderings grows exponentially. To efficiently determine the partial ordering of code edits, we used \textit{Partial Order Reduction} to prune any unnecessary interleaving of \textbf{independent} edits while ensuring all critical relationships are evaluated.
+\label{sec:por}
+
+The number of possible transition orderings grows exponentially (Figure \ref{fig:partial-order}). To efficiently determine the partial ordering of code edits, we used \textit{Partial Order Reduction} \cite{cirisci2022pragmaticapproachstatefulpartial} to prune any unnecessary interleaving of \textbf{independent} edits while ensuring all critical relationships are evaluated.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{fig/partial-orders.png}
+    \caption{For a commit comprising 11 edits with the dependencies specified above, there are initially 13,860 possible sequences. By applying partial-order reduction, this figure drops to only 36, reflecting a 99\% decrease in the overall search space.}
+    \label{fig:partial-order}
+\end{figure}
 
 \subsection{Key Components}
 
@@ -93,7 +102,7 @@ The following are key observations (examples provided in Figure \ref{fig:observa
     \item A single edit region may contain multiple edit semantics, which may require multiple rounds of parsing before full processing.
     \item The order of edits should be arranged based on their dependencies to ensure correct sequencing.
     \item Independent edits can be applied concurrently with no regards to consequences.
-    \item Edits within the same code block are more likely to occur sequentially (Figure \ref{fig:proximity}) due to their local dependencies and proximity.
+    \item Edits within the same code block are more likely to occur sequentially due to their local dependencies and proximity.
     \item Inter-file dependencies are often mediated through shared components (e.g., imports, global variables, or shared libraries).
 \end{enumerate}
 
@@ -112,12 +121,12 @@ The following are key observations (examples provided in Figure \ref{fig:observa
 \end{figure}
 
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.6\linewidth]{fig/code_proximity.png}
-    \caption{Code proximity and dependencies}
-    \label{fig:proximity}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.6\linewidth]{fig/code_proximity.png}
+%     \caption{Code proximity and dependencies}
+%     \label{fig:proximity}
+% \end{figure}
 
 \subsection{Types of Dependencies}
 
@@ -198,7 +207,7 @@ This matrix provides a compact representation of the relationships between edits
 In this section, different methods were explored and their results were aggregated to estimate the dependency between two different edits, $h_i, h_j \in \mathbf{H}$. 
 
 
-\subsection{Heuristic Method}
+\subsection{Heuristics}
 
 The heuristic approach leverages observed patterns to establish a relative ordering of edits, denoted as \(\mathbf{H} = \{ h_1, h_2, \dots, h_n \}\). For each edit \( h_i \in \mathbf{H} \), we categorize the edit type (addition, deletion, or modification) and prioritize the ordering based on the following observations:
 
@@ -207,12 +216,17 @@ The heuristic approach leverages observed patterns to establish a relative order
 \item \textbf{Top-Down Order}: Edits within a single file are applied from top to bottom, yielding an order based on line numbers \( \text{line}(h_i) < \text{line}(h_j) \implies h_i \rightarrow h_j \).
 \item \textbf{Import Order}: If \( h_i \) involves a module import and \( h_j \) references it, we establish \( h_i \rightarrow h_j \) based on the dependency.
 \item \textbf{Lint Errors:} Procedurally sample across a set of error-free edits \( E = \{e_1, e_2, \dots, e_n\} \) to iteratively construct a valid program \( P = \{p_1, p_2, \dots, p_m\} \), where each intermediate program \( p_j \) is error-free \cite{jimenez2023, pandey2024}.
+\item \textbf{Identical Code}: Let $\mathcal{E} = \{e_1, e_2, \dots, e_n\}$ be the set of edits and define $\mathrm{Code}(e_i)$ as the code produced by edit $e_i$. We say that two edits are redundant if 
+\[
+e_i \sim e_j \quad \Longleftrightarrow \quad \mathrm{Code}(e_i) \equiv \mathrm{Code}(e_j),
+\]
+where $\equiv$ denotes identical or semantically equivalent code. Merge each equivalence class $[e] = \{e_i \in \mathcal{E} \mid e_i \sim e\}$ into a single representative edit to minimize redundancy and reduce conflicts.
 \end{enumerate}
 
 
 The resultant ordering, \( O_{\text{heuristic}}(\mathbf{H}) \), provides a sequence based on these heuristic rules. 
 
-\subsection{Static Analysis Method}
+\subsection{Static Analysis}
 
 The static analysis approach utilizes the set of heuristics identified in the previous section to explicitly identify \textit{possible} dependencies between edits. We define a parser \( P(h_i, h_j) \) to estimate the dependency between two edits \( h_i \) and \( h_j \) by performing the following steps:
 
@@ -234,7 +248,7 @@ The static analysis approach utilizes the set of heuristics identified in the pr
     \label{fig:dependency_graph}
 \end{figure}
 
-\subsection{Agentic Method}
+\subsection{Agents}
 
 The agentic approach uses a language model\footnote{In our experiments, we have mainly adopted GPT4, Gemini-Flash, DeepSeek v3 and Llama.} \( \mathcal{M} \) to infer relationships between edits by providing relevant context for each edit \( h_i \in \mathbf{H} \). For each edit, we create a context vector \( \mathbf{c}(h_i) \), which includes pre-existing code usage data such as function signatures or variable assignments:
 \[
