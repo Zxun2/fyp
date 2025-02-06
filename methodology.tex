@@ -23,10 +23,10 @@ This formulation allows us to capture a range of dependencies or independencies 
 
 The number of possible transition orderings grows exponentially (Figure \ref{fig:partial-order}). To efficiently determine the partial ordering of code edits, we used \textit{Partial Order Reduction} \cite{cirisci2022pragmaticapproachstatefulpartial} to prune any unnecessary interleaving of \textbf{independent} edits while ensuring all critical relationships are evaluated.
 
-\begin{figure}
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.5\linewidth]{fig/partial-orders.png}
-    \caption{For a commit comprising 11 edits with the dependencies specified above, there are initially 13,860 possible sequences. By applying partial-order reduction, this figure drops to only 36, reflecting a 99\% decrease in the overall search space.}
+    \includegraphics[width=0.3\linewidth]{fig/partial-orders.png}
+    \caption{For a commit comprising of 11 edits with the dependencies specified above, there are initially 13,860 possible sequences. By applying partial-order reduction, this figure drops to only 36, reflecting a 99\% decrease in the overall search space.}
     \label{fig:partial-order}
 \end{figure}
 
@@ -139,7 +139,7 @@ Syntactic dependencies arise from structural relationships within the abstract s
     \item \textbf{Control Flow:} Dependencies introduced by constructs such as loops or conditional statements.
     \item \textbf{Scope:} Relationships governed by scope hierarchies, such as nested blocks or functions.
 \end{itemize}
-For example, an edit modifying a loop header \( h_i \) might syntactically depend on edits to its body \( h_j \).
+For example, an edit modifying a loop header might syntactically depend on edits to its body.
 
 \subsubsection{Semantic Dependency}
 Semantic dependencies are derived from the meaning and behavior of the code. These include:
@@ -260,7 +260,7 @@ Given the context vectors \( \mathbf{C} = \{\mathbf{c}(h_1), \mathbf{c}(h_2), \d
 O_{\text{agentic}}(\mathbf{H}) = \mathcal{M}(\mathbf{C})
 \]
 
-This order \( O_{\text{agentic}}(\mathbf{H}) \) reflects the language model's inferred relationships. We will be using Google's Chain of Agents (CoA) framework for multi-agent orchestration.
+This order \( O_{\text{agentic}}(\mathbf{H}) \) reflects the language model's inferred relationships. We will be adapting the Chain of Agents (CoA) framework for multi-agent orchestration.
 
 \section{Context Selection and Prompt Construction}
 
